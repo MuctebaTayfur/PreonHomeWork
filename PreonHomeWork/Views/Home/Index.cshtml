@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    var response = new object();
+}
+
+<div class="text-center">   
+    <form id="body" action="/Home/Index" method="get">
+        <fieldset>
+            <label for="city"> Şehir : </label>
+            <select id="select" name="city">
+                @foreach (var item in Model)
+                {
+                    <option id="city" value="@item.Key">@item.Value</option>
+                }
+            </select>
+            <label for="tarih"> Tarih : </label>
+            <input type="date" id="date">
+            <input type="button" class="btn btn-primary" id="btnGetData" value="Onayla" />
+        </fieldset> 
+        <table  class="table table-striped table-bordered mt-2" style="width:100%">
+            <thead>
+                <tr>
+                    <th id="weatherState">Hava Durumu</th>               
+                    <th id="temp">Sıcaklık (°C)</th>
+                    <th id="minTemp">Min Sıcaklık (°C)</th>
+                    <th id="maxTemp">Max Sıcaklık (°C)</th>
+                </tr>
+            </thead>
+            <tbody id="weatherRow">         
+            </tbody>
+        </table>
+    </form>  
+</div>
+<script> 
+    $('#btnGetData').click(function () {     
+        var cities = document.getElementById("select");
+        var cityId = cities.options[cities.selectedIndex].value;
+        var date = document.getElementById("date").value;                 
+           $.ajax({
+            type: "GET",                      
+            url: "Home/GetWeather?cityId="+cityId+"&date="+date,
+            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
+            cache: false,
+            success: function (data) {
+                getWeatherList(data["consolidated_weather"] ? data["consolidated_weather"]:data);
+            },
+            error: function (err) {
+                alert("hata");
+            }
+            
+        })
+        
+    })
+    function getWeatherList(weatherList) {
+        document.getElementById("weatherRow").innerHTML = "";
+        weatherList.forEach((item) => {
+            document.getElementById("weatherRow").innerHTML += `<tr><td>${item.weather_state_name}</td>
+                                                                <td>${item.the_temp.toFixed(2)}</td>
+                                                                <td>${item.min_temp.toFixed(2)}</td>
+                                                                <td>${item.max_temp.toFixed(2)}</td></tr>`
+        })     
+    }
+</script>
